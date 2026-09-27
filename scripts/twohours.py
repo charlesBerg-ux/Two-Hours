@@ -344,6 +344,16 @@ def load_settings(data_dir):
     return settings
 
 
+def timezone_database_available():
+    if ZoneInfo is None:
+        return False
+    try:
+        ZoneInfo("America/New_York")
+        return True
+    except Exception:
+        return False
+
+
 def now_timestamp(settings):
     name = settings.get("timezone") or "UTC"
     tz = None
@@ -936,11 +946,17 @@ def cmd_init(args):
     d = resolve_data_dir(args.data_dir, must_exist=False)
     warnings = []
     tz = args.timezone
-    if tz and ZoneInfo is not None:
-        try:
-            ZoneInfo(tz)
-        except Exception:
-            raise ConfigError(f"{tz!r} is not a known IANA time zone, like America/Los_Angeles.")
+    if tz:
+        if timezone_database_available():
+            try:
+                ZoneInfo(tz)
+            except Exception:
+                raise ConfigError(f"{tz!r} is not a known IANA time zone, like America/Los_Angeles.")
+        else:
+            warnings.append(
+                f"This computer has no time zone database, so {tz!r} could not be checked. Timestamps will "
+                "use the computer's local time. Installing the tzdata package (pip install tzdata) fixes this."
+            )
     os.makedirs(d, exist_ok=True)
     created, kept = [], []
     for _, fname, cols in TABLES:
