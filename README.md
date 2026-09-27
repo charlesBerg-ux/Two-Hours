@@ -4,7 +4,7 @@ Open agent skills for running a job search with the method from Steve Dalton's *
 
 The skills use the open [Agent Skills](https://agentskills.io) format (`SKILL.md` folders), so they are meant to work in any agent that supports it, whichever AI model that agent runs. That includes Claude Code, Codex CLI, Gemini CLI, GitHub Copilot, Cursor, and OpenClaw.
 
-> **Status: early.** The shared data contract is drafted. The skills and scripts are not written yet. See the roadmap below.
+> **Status: early.** The data contract and the shared data script are done. The skills are not written yet. See the roadmap below.
 
 ## Two ways to use it
 
@@ -24,6 +24,18 @@ Both work because the skills never pass state through conversation. They read an
 | `follow-up` | Tells you who is due a follow-up and drafts it, or suggests a different contact when someone goes quiet. |
 | `job-search` | Runs the steps above in order, for people using a single agent. |
 
+## Try the data tools
+
+The skills are not ready yet, but the data script works today. It needs Python 3.9 or newer and nothing else.
+
+```bash
+python3 scripts/twohours.py init --data-dir ~/job-search --timezone America/Los_Angeles
+python3 scripts/twohours.py add lamp --as human --set employer="Acme Solar" --data-dir ~/job-search
+python3 scripts/twohours.py rank --data-dir ~/job-search
+```
+
+See [scripts/README.md](scripts/README.md) for every command.
+
 ## Your data stays yours
 
 Your employer list, contacts, and outreach log live in a data folder you choose, outside this repo. `.gitignore` excludes common data folder names, but keep your data folder somewhere else entirely so it can never be committed. Please never paste real contact details into issues.
@@ -33,7 +45,7 @@ No skill scrapes LinkedIn or sends messages on your behalf. Alumni checks use th
 ## Roadmap
 
 - [x] Data contract (`schema/`)
-- [ ] Shared scripts: stage sync, safe file writes, validation
+- [x] Shared data script: [`scripts/twohours.py`](scripts/README.md) (init, validate, sync, rank, add, update, log, import)
 - [ ] `lamp-list` skill
 - [ ] `alumni-check` skill
 - [ ] `lamp-score` skill

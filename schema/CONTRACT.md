@@ -51,7 +51,7 @@ One row per employer. Columns appear in this order in the template so the file r
 | `alumni` | enum | `Y`, `N`, empty | `alumni-check` | `Y` if at least one contact in `contacts.csv` shares an affinity with the user. Empty means not checked yet. |
 | `motivation` | integer | `3`, `2`, `1`, `0`, empty | human | The user's own gut rating: 3 desirable, 2 middle tier, 1 lower tier, 0 don't know. |
 | `posting` | integer | `3`, `2`, `1`, empty | `lamp-score` | 3 a posted role fits the user, 2 the employer is hiring but not for a fitting role, 1 no relevant postings found. |
-| `stage` | enum | see section 6 | `lamp-sync` script | Derived status. Never edited by hand or by an agent's judgment. |
+| `stage` | enum | see section 6 | `twohours.py` | Derived status. Never edited by hand or by an agent's judgment. |
 | `hold` | enum | `Y`, empty | human | `Y` parks the employer without deleting it. |
 | `notes` | text | | human | Anything the user wants to remember. |
 | `source` | text | `user`, `suggested`, `job-board`, `connections-export`, or other | `lamp-list` | Where the employer came from. `suggested` means an AI proposed it. |
@@ -59,7 +59,7 @@ One row per employer. Columns appear in this order in the template so the file r
 | `posting_url` | URL | | `lamp-score` | Evidence for a `posting` value of 2 or 3. |
 | `posting_checked` | date | | `lamp-score` | When postings were last checked. |
 
-**Motivation belongs to the user.** A skill may ask for it and record the answer, but it must never infer, suggest, or fill in a motivation score. The whole point of the rating is that it is the user's.
+**Motivation belongs to the user.** A skill may ask for it and record the answer (as `human`, since the user decided it), but it must never infer, suggest, or fill in a motivation score. The whole point of the rating is that it is the user's.
 
 **Contact names do not go in lamp.csv.** People live in `contacts.csv`, linked by `employer_id`, so there is exactly one place to update or delete them.
 
@@ -118,7 +118,7 @@ An append-only record of events. Nothing in this file is edited or deleted. A mi
 
 ## 6. Stage (derived)
 
-`stage` in `lamp.csv` is recalculated by the `lamp-sync` script from the other columns and the outreach log. The first matching rule wins.
+`stage` in `lamp.csv` is recalculated by `twohours.py` (the `sync` command, and automatically after every write) from the other columns and the outreach log. The first matching rule wins.
 
 | Stage | Rule |
 |---|---|
@@ -166,7 +166,7 @@ Rows with `hold` = `Y` are excluded.
 
 Most violations of this contract happen when two writers rewrite the same file at once, even if they own different columns. These rules prevent lost updates.
 
-1. **Write through the provided scripts** when the agent can run code. They implement the rules below.
+1. **Write through [`scripts/twohours.py`](../scripts/README.md)** when the agent can run code. It implements the rules below and the ownership rules in sections 3 to 5.
 2. **Lock before writing.** Create `<data_dir>/.lock` exclusively. If it already exists, wait and retry. A lock older than 60 seconds is stale and may be removed.
 3. **Read, modify, write, in one locked step.** Read the whole file, change only the columns and rows this writer owns, write to a temporary file in the same directory, then rename it over the original.
 4. **Keep everything else intact:** other writers' columns, unknown columns, and row order.
@@ -179,7 +179,7 @@ Most violations of this contract happen when two writers rewrite the same file a
 `lamp.csv` is designed to round-trip through Google Sheets or Excel.
 
 - **Export:** import `lamp.csv` into a sheet with its header as row 1. The `id` column may be hidden but must not be deleted.
-- **Import back:** `lamp-import` merges the sheet into `lamp.csv` by `id`. It accepts changes only to human-owned columns (`employer`, `motivation`, `hold`, `notes`) plus any user-added columns. Changes to agent-owned columns are ignored, because the file stays the source of truth for them.
+- **Import back:** `twohours.py import` merges the sheet into `lamp.csv` by `id`. It accepts changes only to human-owned columns (`employer`, `motivation`, `hold`, `notes`) plus any user-added columns. Changes to agent-owned columns are ignored, because the file stays the source of truth for them.
 - A sheet row with no `id` is treated as a new employer added by the user (`source` = `user`).
 - Legends or notes above the header row break the round-trip. Put them in a cell note or a separate tab.
 

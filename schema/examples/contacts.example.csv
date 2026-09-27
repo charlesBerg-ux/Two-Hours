@@ -1,3 +1,4 @@
 id,employer_id,name,title,affinity,connection,mutuals,source,profile_url,email,hold,notes
 c0001,greenline-grid,Alex Rivera,Head of Product Design,Example Corp,2,14,search,https://example.com/in/alex-rivera,,,Introduced by a former teammate
-c0002,greenline-grid,Sam Okafor,Staff Engineer,Example University,0,,search,,,Y,Ask Alex for an intro first
+c0002,greenline-grid,Sam Okafor,Staff Engineer,Example University,0,,search,,,,
+c0003,greenline-grid,Jordan Lee,VP of Product,Example Corp,2,3,search,,,Y,Ask Alex for an intro first

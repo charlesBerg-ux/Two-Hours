@@ -1,4 +1,4 @@
 id,employer,what,bucket,alumni,motivation,posting,stage,hold,notes,source,alumni_checked,posting_url,posting_checked
 greenline-grid,Greenline Grid,Home battery software for utilities; fictional example,alumni,Y,3,2,contacting,,Met their design lead at a meetup,user,2026-09-20,https://example.com/jobs/123,2026-09-21
 tidewater-data,Tidewater Data,Ocean monitoring nonprofit using satellite data; fictional example,dream,N,3,1,scored,,,suggested,2026-09-20,,2026-09-21
-sunbeam-homes,Sunbeam Homes,Residential solar installer with a consumer app; fictional example,hiring,,1,3,scored,Y,Commute too long,job-board,,https://example.com/jobs/456,2026-09-21
+sunbeam-homes,Sunbeam Homes,Residential solar installer with a consumer app; fictional example,hiring,,1,3,hold,Y,Commute too long,job-board,,https://example.com/jobs/456,2026-09-21
