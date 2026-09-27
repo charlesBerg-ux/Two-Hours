@@ -1,0 +1,28 @@
+# Personal job-search data. Keep your data folder outside this repo;
+# these patterns are a safety net, not a substitute.
+/data/
+/job-search-data/
+/two-hours-data/
+/my-search/
+/inputs/
+/drafts/
+/reports/
+.lock
+
+# Working copies of the data files at the repo root
+/lamp.csv
+/contacts.csv
+/outreach-log.csv
+/job-search.json
+
+# LinkedIn exports
+Connections.csv
+*connections*.csv
+!schema/**
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

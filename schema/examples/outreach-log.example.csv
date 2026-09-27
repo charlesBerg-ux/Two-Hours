@@ -1,0 +1,4 @@
+event_id,at,contact_id,employer_id,event,kind,channel,draft,actor,ref,note
+ev0001,2026-09-22T09:10:00-07:00,c0001,greenline-grid,drafted,initial,email,drafts/ev0001.md,outreach-draft,,
+ev0002,2026-09-22T11:30:00-07:00,c0001,greenline-grid,sent,initial,email,,human,,Edited the second sentence before sending
+ev0003,2026-09-25T08:45:00-07:00,c0002,greenline-grid,drafted,initial,email,drafts/ev0003.md,follow-up,,No reply from c0001 after 3 business days
