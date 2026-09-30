@@ -4,7 +4,7 @@ Open agent skills for running a job search with the method from Steve Dalton's *
 
 The skills use the open [Agent Skills](https://agentskills.io) format (`SKILL.md` folders), so they are meant to work in any agent that supports it, whichever AI model that agent runs. That includes Claude Code, Codex CLI, Gemini CLI, GitHub Copilot, Cursor, and OpenClaw.
 
-> **Status: early.** The data contract and the shared data script are done. The skills are not written yet. See the roadmap below.
+> **Status: early.** The data contract, the shared data script, and the first skill (`lamp-score`) are done. See the roadmap below.
 
 ## Two ways to use it
 
@@ -23,6 +23,10 @@ Both work because the skills never pass state through conversation. They read an
 | `outreach-draft` | Drafts short outreach messages for your approval. It never sends anything. |
 | `follow-up` | Tells you who is due a follow-up and drafts it, or suggests a different contact when someone goes quiet. |
 | `job-search` | Runs the steps above in order, for people using a single agent. |
+
+## Install a skill
+
+Each folder in `skills/` is a self-contained skill in the open [Agent Skills](https://agentskills.io) format, with its own copy of the data script. Copy the folder into the place your agent loads skills from (for example `~/.claude/skills/` for Claude Code, or your OpenClaw workspace's `skills/` folder), then tell the agent where your data folder is, or set `TWO_HOURS_DATA`.
 
 ## Try the data tools
 
@@ -48,7 +52,7 @@ No skill scrapes LinkedIn or sends messages on your behalf. Alumni checks use th
 - [x] Shared data script: [`scripts/twohours.py`](scripts/README.md) (init, validate, sync, rank, add, update, log, import)
 - [ ] `lamp-list` skill
 - [ ] `alumni-check` skill
-- [ ] `lamp-score` skill
+- [x] [`lamp-score`](skills/lamp-score/SKILL.md) skill
 - [ ] `outreach-draft` skill
 - [ ] `follow-up` skill
 - [ ] `job-search` conductor skill

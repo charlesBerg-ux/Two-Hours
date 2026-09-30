@@ -1,6 +1,6 @@
 # Data contract
 
-**Contract version:** 0.2 (draft)
+**Contract version:** 0.3 (draft)
 
 This file defines the shared data that every skill in this repo reads and writes. Skills never pass state to each other through conversation. They pass it through the files described here. That is what lets one person run the whole search in a single agent session, and lets an OpenClaw user split the same work across several agents without them colliding.
 
@@ -146,12 +146,16 @@ Rows with `hold` = `Y` are excluded.
 
 ```json
 {
-  "contract_version": "0.2",
+  "contract_version": "0.3",
   "timezone": "America/Los_Angeles",
   "list_target": 40,
   "buckets": ["dream", "alumni", "hiring", "trending"],
   "affinities": ["Example Corp", "Example University"],
   "sort": ["motivation desc", "posting desc", "alumni desc", "employer asc"],
+  "target_roles": ["Senior Product Designer", "Staff Product Designer", "Design Lead"],
+  "target_locations": ["Example City Area"],
+  "remote_ok": true,
+  "posting_max_age_days": 7,
   "outreach_batch_size": 5,
   "follow_up": {
     "try_another_contact_after_business_days": 3,
@@ -161,6 +165,10 @@ Rows with `hold` = `Y` are excluded.
 ```
 
 `affinities` lists the user's schools and past employers. `alumni-check` matches against it. The follow-up timings are defaults and can be changed.
+
+`target_roles`, `target_locations`, and `remote_ok` say what a fitting job looks like. `lamp-score` uses them to decide between a `posting` of 3 (a posted role fits) and 2 (hiring, but nothing fits). Roles are written the way the user would describe them; the skill reads them with judgment, not as exact strings. `posting_max_age_days` is how old a posting check can be before `lamp-score` checks that employer again. Postings change fast, so the default is 7.
+
+The user owns these settings. An agent may write them only with values the user has given.
 
 ## 9. Writing safely
 

@@ -443,5 +443,84 @@ class TestImport(Base):
         self.assertEqual(len(self.lamp()), 3)
 
 
+class TestQueueAndTargets(Base):
+    def set_settings(self, **changes):
+        path = os.path.join(self.d, "job-search.json")
+        settings = json.loads(read(path))
+        settings.update(changes)
+        write(path, json.dumps(settings))
+
+    def test_queue_lists_unchecked_and_stale_rows_in_rank_order(self):
+        self.run_cli("add", "lamp", "--as", "human", "--set", "employer=Acme Solar")
+        code, res = self.run_cli("queue", "posting")
+        self.assertEqual(code, 0, res)
+        ids = [r["id"] for r in res["rows"]]
+        # Examples were checked 2026-09-21 (stale); sunbeam is on hold; acme was never checked.
+        self.assertEqual(ids, ["greenline-grid", "tidewater-data", "acme-solar"])
+        self.assertEqual(res["rows"][-1]["reason"], "never checked")
+
+    def test_recent_checks_are_skipped_unless_all(self):
+        today = th.today_date({"timezone": "America/Los_Angeles"}).isoformat()
+        self.run_cli("update", "lamp", "--as", "lamp-score", "--id", "tidewater-data",
+                     "--set", f"posting_checked={today}")
+        code, res = self.run_cli("queue", "posting")
+        self.assertNotIn("tidewater-data", [r["id"] for r in res["rows"]])
+        code, res = self.run_cli("queue", "posting", "--all")
+        self.assertIn("tidewater-data", [r["id"] for r in res["rows"]])
+
+    def test_queue_reports_targets_and_warns_when_empty(self):
+        code, res = self.run_cli("queue", "posting")
+        self.assertTrue(res["targets"]["remote_ok"])
+        self.assertEqual(res["warnings"], [])
+        self.set_settings(target_roles=[])
+        code, res = self.run_cli("queue", "posting")
+        self.assertEqual(code, 0)
+        self.assertTrue(res["warnings"])
+        code, res = self.run_cli("validate")
+        self.assertTrue(any("target_roles" in w for w in res["warnings"]))
+
+    def test_bad_target_settings_are_errors(self):
+        self.set_settings(remote_ok="yes", posting_max_age_days=0)
+        code, res = self.run_cli("validate")
+        self.assertEqual(code, 1)
+        joined = "\n".join(res["errors"])
+        self.assertIn("remote_ok", joined)
+        self.assertIn("posting_max_age_days", joined)
+        self.assertEqual(self.run_cli("queue", "posting")[0], 2)
+
+    def test_older_settings_still_work(self):
+        path = os.path.join(self.d, "job-search.json")
+        settings = json.loads(read(path))
+        for key in ("target_roles", "target_locations", "remote_ok", "posting_max_age_days"):
+            settings.pop(key)
+        settings["contract_version"] = "0.2"
+        write(path, json.dumps(settings))
+        code, res = self.run_cli("validate")
+        self.assertEqual(code, 0, res)
+        code, res = self.run_cli("queue", "posting")
+        self.assertEqual(code, 0, res)
+
+    def test_init_records_targets(self):
+        new = os.path.join(self.tmp, "fresh")
+        with redirect_stdout(io.StringIO()):
+            code = th.main(["init", "--data-dir", new, "--target-role", "Senior Product Designer",
+                            "--target-location", "Example City Area", "--remote-ok"])
+        self.assertEqual(code, 0)
+        settings = json.loads(read(os.path.join(new, "job-search.json")))
+        self.assertEqual(settings["target_roles"], ["Senior Product Designer"])
+        self.assertTrue(settings["remote_ok"])
+
+
+class TestSkillCopies(unittest.TestCase):
+    def test_every_skill_carries_the_current_script(self):
+        source = read(os.path.join(ROOT, "scripts", "twohours.py"), "rb")
+        skills = os.path.join(ROOT, "skills")
+        copies = [os.path.join(skills, s, "scripts", "twohours.py") for s in sorted(os.listdir(skills))] \
+            if os.path.isdir(skills) else []
+        for path in copies:
+            self.assertTrue(os.path.exists(path), f"{path} is missing; run scripts/vendor.py")
+            self.assertEqual(read(path, "rb"), source, f"{path} is out of date; run scripts/vendor.py")
+
+
 if __name__ == "__main__":
     unittest.main()

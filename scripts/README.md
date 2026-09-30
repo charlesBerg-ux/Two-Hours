@@ -3,7 +3,7 @@
 One script that creates, checks, and safely updates the job-search data described in the [data contract](../schema/CONTRACT.md). Every skill uses it instead of editing the files directly, so the contract's rules hold no matter which agent or AI model is doing the work.
 
 - Standard library only. Python 3.9 or newer, on macOS, Linux, or Windows.
-- One file, so each skill can carry its own copy. This file is the source; skill copies are kept identical to it.
+- One file, so each skill can carry its own copy. This file is the source; run `python3 scripts/vendor.py` after changing it to update the copies in `skills/`. The tests fail if a copy is out of date.
 
 ## Quick start
 
@@ -29,6 +29,7 @@ Keep the data folder outside this repo and outside any other git repository. `in
 | `validate` | Checks every file against the contract. Prints errors and warnings; exits 1 if there are errors. |
 | `sync` | Recalculates the `stage` column. The write commands below also do this automatically. |
 | `rank` | Prints the ranked employer list using the `sort` setting. Employers on hold are left out unless you pass `--include-hold`. |
+| `queue posting` | Lists employers due for a posting check (never checked, or older than `posting_max_age_days`), highest ranked first, along with the user's targets. `--all` includes recent checks. |
 | `add lamp` / `add contacts` | Adds rows. IDs are assigned automatically. Employers and contacts already on the list are skipped, not duplicated. |
 | `update lamp` / `update contacts` | Changes values in existing rows, by `id`. |
 | `log` | Appends an event to `outreach-log.csv`. With `--draft-from`, saves the draft text as `drafts/<event_id>.md`. |
