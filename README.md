@@ -18,7 +18,7 @@ Both work because the skills never pass state through conversation. They read an
 | Skill | What it does |
 |---|---|
 | `lamp-list` | Builds the target employer list. It can organize employers you supply, suggest employers for you to consider, or both. |
-| `alumni-check` | Finds people at each employer who share your schools or past employers, using your LinkedIn connections export. |
+| `alumni-check` | Finds people at each employer you already know or share a school or past employer with. Your LinkedIn connections export shows which of your 1st-degree connections work at each employer now; shared backgrounds for people you don't know yet are confirmed from their public profiles. |
 | `lamp-score` | Checks each employer for relevant job postings. You rate your own motivation; the skill never guesses it. |
 | `outreach-draft` | Drafts short outreach messages for your approval. It never sends anything. |
 | `follow-up` | Tells you who is due a follow-up and drafts it, or suggests a different contact when someone goes quiet. |

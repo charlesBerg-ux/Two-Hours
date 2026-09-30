@@ -179,6 +179,7 @@ Most violations of this contract happen when two writers rewrite the same file a
 `lamp.csv` is designed to round-trip through Google Sheets or Excel.
 
 - **Export:** import `lamp.csv` into a sheet with its header as row 1. The `id` column may be hidden but must not be deleted.
+- **Google Drive note:** opening `lamp.csv` in Google Sheets from Drive creates a separate Sheets file and leaves the CSV unchanged. That is fine: edit the sheet, then merge it back with `import` (download it as CSV first). Before the next round of edits, refresh the sheet from the current `lamp.csv` so it shows the latest values from the skills.
 - **Import back:** `twohours.py import` merges the sheet into `lamp.csv` by `id`. It accepts changes only to human-owned columns (`employer`, `motivation`, `hold`, `notes`) plus any user-added columns. Changes to agent-owned columns are ignored, because the file stays the source of truth for them.
 - A sheet row with no `id` is treated as a new employer added by the user (`source` = `user`).
 - Legends or notes above the header row break the round-trip. Put them in a cell note or a separate tab.
