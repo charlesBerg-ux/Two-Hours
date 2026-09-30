@@ -30,6 +30,7 @@ Keep the data folder outside this repo and outside any other git repository. `in
 | `sync` | Recalculates the `stage` column. The write commands below also do this automatically. |
 | `rank` | Prints the ranked employer list using the `sort` setting. Employers on hold are left out unless you pass `--include-hold`. |
 | `queue posting` | Lists employers due for a posting check (never checked, or older than `posting_max_age_days`), highest ranked first, along with the user's targets. `--all` includes recent checks. |
+| `queue outreach` | Lists the next scored employers with no outreach yet, up to `outreach_batch_size`, each with its eligible contacts best first (1st-degree, then most mutual connections). Also lists ranked employers that need a contact first. |
 | `add lamp` / `add contacts` | Adds rows. IDs are assigned automatically. Employers and contacts already on the list are skipped, not duplicated. |
 | `update lamp` / `update contacts` | Changes values in existing rows, by `id`. |
 | `log` | Appends an event to `outreach-log.csv`. With `--draft-from`, saves the draft text as `drafts/<event_id>.md`. |

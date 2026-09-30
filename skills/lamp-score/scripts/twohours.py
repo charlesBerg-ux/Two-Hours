@@ -33,7 +33,7 @@ except ImportError:  # pragma: no cover
     ZoneInfo = None
 
 CONTRACT_VERSION = "0.3"
-TOOL_VERSION = "0.2.0"
+TOOL_VERSION = "0.3.0"
 DATA_DIR_ENV = "TWO_HOURS_DATA"
 
 LAMP_FILE = "lamp.csv"
@@ -1332,9 +1332,64 @@ def cmd_import(args):
     ), lines
 
 
+def contact_sort_key(contact):
+    """1st-degree first, then 2nd, 3rd, then unknown; more mutuals first; known affinity first."""
+    order = {"1": 0, "2": 1, "3": 2}
+    mutuals = contact.get("mutuals", "").strip()
+    return (
+        order.get(contact.get("connection", "").strip(), 3),
+        -(int(mutuals) if mutuals.isdigit() else 0),
+        0 if contact.get("affinity", "").strip() else 1,
+    )
+
+
+def outreach_queue(d, settings, limit):
+    t = load_all(d)
+    lamp, contacts, log = t["lamp"], t["contacts"], t["log"]
+    by_employer = {}
+    for c in contacts.rows:
+        by_employer.setdefault(c.get("employer_id", "").strip(), []).append(c)
+    candidates = [
+        r for r in lamp.rows
+        if r.get("hold", "").strip() != "Y" and r.get("stage", "").strip() == "scored"
+    ]
+    ranked = rank_rows(candidates, settings.get("sort", DEFAULT_SETTINGS["sort"]))
+    rows, needs_contacts = [], []
+    employer_keys = ("id", "employer", "what", "motivation", "posting", "posting_url", "alumni")
+    contact_keys = ("id", "name", "title", "affinity", "connection", "mutuals", "profile_url", "email", "notes")
+    for r in ranked:
+        if len(rows) >= limit:
+            break
+        eligible = []
+        for c in by_employer.get(r["id"].strip(), []):
+            started, ended = contact_status(c["id"].strip(), log.rows)
+            if ended or (c.get("hold", "").strip() == "Y" and not started):
+                continue
+            eligible.append(c)
+        entry = {k: r.get(k, "").strip() for k in employer_keys}
+        if not eligible:
+            needs_contacts.append(entry)
+            continue
+        eligible.sort(key=contact_sort_key)
+        entry["contacts"] = [{k: c.get(k, "").strip() for k in contact_keys} for c in eligible]
+        rows.append(entry)
+    return rows, needs_contacts
+
+
 def cmd_queue(args):
     d = resolve_data_dir(args.data_dir)
     settings = load_settings(d)
+    if args.kind == "outreach":
+        size = settings.get("outreach_batch_size", DEFAULT_SETTINGS["outreach_batch_size"])
+        if isinstance(size, bool) or not isinstance(size, int) or size < 1:
+            raise ConfigError(f"{SETTINGS_FILE}: outreach_batch_size must be a whole number, 1 or more.")
+        rows, needs = outreach_queue(d, settings, args.limit or size)
+        lines = [f"{len(rows)} employer(s) ready for a first message (batch size {args.limit or size})"]
+        for r in rows:
+            first = r["contacts"][0]
+            lines.append(f"  {r['employer']}: {first['name']} ({first['id']}), +{len(r['contacts']) - 1} other(s)")
+        lines += [f"  needs a contact first: {n['employer']}" for n in needs]
+        return _result(queue="outreach", rows=rows, needs_contacts=needs), lines
     errors = check_target_settings(settings)
     if errors:
         raise ConfigError(" ".join(errors))
@@ -1418,9 +1473,9 @@ def build_parser():
     s.add_argument("--limit", type=int, help="show only the top N")
     s.add_argument("--include-hold", action="store_true", help="include employers on hold")
 
-    s = sub.add_parser("queue", parents=[common], help="list employers due for a check, highest ranked first")
-    s.add_argument("kind", choices=("posting",), help="which check")
-    s.add_argument("--all", action="store_true", help="include employers checked recently")
+    s = sub.add_parser("queue", parents=[common], help="list the next employers to work on, highest ranked first")
+    s.add_argument("kind", choices=("posting", "outreach"), help="posting: due for a posting check; outreach: next first messages")
+    s.add_argument("--all", action="store_true", help="posting only: include employers checked recently")
     s.add_argument("--limit", type=int, help="show only the first N")
 
     for name, text in (("add", "add rows to lamp.csv or contacts.csv"), ("update", "change values in existing rows")):

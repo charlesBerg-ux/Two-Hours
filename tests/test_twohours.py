@@ -511,6 +511,48 @@ class TestQueueAndTargets(Base):
         self.assertTrue(settings["remote_ok"])
 
 
+class TestOutreachQueue(Base):
+    def test_only_scored_employers_with_eligible_contacts(self):
+        # Examples: greenline is already contacting, tidewater is scored with no contacts, sunbeam is on hold.
+        code, res = self.run_cli("queue", "outreach")
+        self.assertEqual(code, 0, res)
+        self.assertEqual(res["rows"], [])
+        self.assertEqual([n["id"] for n in res["needs_contacts"]], ["tidewater-data"])
+
+    def test_contacts_are_ordered_and_held_contacts_skipped(self):
+        items = json.dumps([
+            {"employer_id": "tidewater-data", "name": "Far Away", "connection": "3", "source": "user"},
+            {"employer_id": "tidewater-data", "name": "Close Friend", "connection": "1", "source": "user"},
+            {"employer_id": "tidewater-data", "name": "Many Mutuals", "connection": "2", "mutuals": "40", "source": "user"},
+            {"employer_id": "tidewater-data", "name": "Few Mutuals", "connection": "2", "mutuals": "2", "source": "user"},
+            {"employer_id": "tidewater-data", "name": "On Hold", "connection": "1", "hold": "Y", "source": "user"},
+        ])
+        code, res = self.run_cli("add", "contacts", "--as", "human", "--from", "-", stdin=items)
+        self.assertEqual(code, 0, res)
+        code, res = self.run_cli("queue", "outreach")
+        names = [c["name"] for c in res["rows"][0]["contacts"]]
+        self.assertEqual(names, ["Close Friend", "Many Mutuals", "Few Mutuals", "Far Away"])
+
+    def test_batch_size_limits_rows(self):
+        for n in range(3):
+            self.run_cli("add", "lamp", "--as", "human", "--set", f"employer=Batch Co {n}")
+            eid = f"batch-co-{n}"
+            self.run_cli("update", "lamp", "--as", "human", "--id", eid, "--set", "motivation=2")
+            self.run_cli("update", "lamp", "--as", "lamp-score", "--id", eid, "--set", "posting=1")
+            self.run_cli("add", "contacts", "--as", "human", "--set", f"employer_id={eid}", "--set", f"name=Person {n}")
+        self.set_batch(2)
+        code, res = self.run_cli("queue", "outreach")
+        self.assertEqual(len(res["rows"]), 2)
+        code, res = self.run_cli("queue", "outreach", "--limit", "3")
+        self.assertEqual(len(res["rows"]), 3)
+
+    def set_batch(self, size):
+        path = os.path.join(self.d, "job-search.json")
+        settings = json.loads(read(path))
+        settings["outreach_batch_size"] = size
+        write(path, json.dumps(settings))
+
+
 class TestSkillCopies(unittest.TestCase):
     def test_every_skill_carries_the_current_script(self):
         source = read(os.path.join(ROOT, "scripts", "twohours.py"), "rb")

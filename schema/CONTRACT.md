@@ -22,7 +22,7 @@ All user data lives in one **data directory** that the user chooses. It must sit
   .lock                present only while a write is in progress
 ```
 
-The user's LinkedIn connections export, if they provide one, goes in `inputs/`. Agents read it and never modify it.
+The user's LinkedIn connections export, if they provide one, goes in `inputs/`. So does `inputs/voice.md`, an optional description of how the user writes, which drafting skills follow. Agents read `inputs/` and never modify it.
 
 ## 2. CSV conventions
 
