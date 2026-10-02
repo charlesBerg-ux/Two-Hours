@@ -4,7 +4,7 @@ Open agent skills for running a job search with the method from Steve Dalton's *
 
 The skills use the open [Agent Skills](https://agentskills.io) format (`SKILL.md` folders), so they are meant to work in any agent that supports it, whichever AI model that agent runs. That includes Claude Code, Codex CLI, Gemini CLI, GitHub Copilot, Cursor, and OpenClaw.
 
-> **Status: early.** The data contract, the shared data script, and the first skills (`lamp-score`, `outreach-draft`) are done. See the roadmap below.
+> **Status: early (v0.1.0).** The data contract, the shared data script, and the first skills (`lamp-score`, `outreach-draft`) are done. See the roadmap below and the [product plan](docs/PRD.md).
 
 ## Two ways to use it
 
@@ -26,11 +26,11 @@ Both work because the skills never pass state through conversation. They read an
 
 ## Install a skill
 
-Each folder in `skills/` is a self-contained skill in the open [Agent Skills](https://agentskills.io) format, with its own copy of the data script. Copy the folder into the place your agent loads skills from (for example `~/.claude/skills/` for Claude Code, or your OpenClaw workspace's `skills/` folder), then tell the agent where your data folder is, or set `TWO_HOURS_DATA`.
+Each folder in `skills/` is a self-contained skill in the open [Agent Skills](https://agentskills.io) format, with its own copy of the data script. Use a [tagged release](https://github.com/charlesBerg-ux/Two-Hours/tags) rather than the latest commit. Copy the folder into the place your agent loads skills from (for example `~/.claude/skills/` for Claude Code, or your OpenClaw workspace's `skills/` folder), then tell the agent where your data folder is, or set `TWO_HOURS_DATA`.
 
 ## Try the data tools
 
-The skills are not ready yet, but the data script works today. It needs Python 3.9 or newer and nothing else.
+The data script works on its own, without an agent. It needs Python 3.9 or newer and nothing else.
 
 ```bash
 python3 scripts/twohours.py init --data-dir ~/job-search --timezone America/Los_Angeles
@@ -64,6 +64,10 @@ No skill scrapes LinkedIn or sends messages on your behalf. Alumni checks use th
 This project implements the workflow described in *The 2-Hour Job Search* by Steve Dalton. It describes the steps in its own words and does not reproduce the book's text or templates. Read the book for the method and the reasoning behind it.
 
 This project is not affiliated with or endorsed by Steve Dalton or the book's publisher.
+
+## Contributing
+
+The plan lives in [docs/PRD.md](docs/PRD.md), and [CLAUDE.md](CLAUDE.md) has the working rules for coding agents (and people). Never include real names or contact details in issues or examples.
 
 ## License
 
